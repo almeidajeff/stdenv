@@ -1,0 +1,29 @@
+HTTP/1.0 400 Bad Request
+Cache-Control: no-cache
+Connection: close
+Content-Type: text/html
+
+<html>
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+    <title> Página Indisponível </title>
+</head>
+    <style>
+        body {font-family: Tahoma, Verdana, Arial, sans-serif;}
+    </style>
+<body bgcolor="white" text="black">
+
+ <table width="100%" height="100%">
+            <tr>
+                <td align="center" valign="middle">
+                    <p><a href=""><IMG src="imagens/error.jpg" alt="" width="375" height="265" border="0"></a></p>
+                    <p>A página que você está procurando está temporariamente indisponível. <br/>
+
+                    Por favor, tente novamente mais tarde.        </p>
+                    <p><strong>Liberiun Network.       </strong></p>
+              </td>
+            </tr>
+        </table>
+
+</body>
+</html>

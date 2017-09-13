@@ -1,0 +1,66 @@
+global
+  log 127.0.0.1 local6
+  maxconn  ${haproxy-conf:maxconn} #Total Max Connections. This is dependent on ulimit
+  user     ${haproxy-conf:user}
+  group    ${haproxy-conf:group}
+  daemon
+  nbproc   4 # Number of processing cores. Dual Dual-core Opteron is 4 cores for example.
+
+
+defaults
+  mode http
+  option httpclose
+  # Remove requests from the queue if people press stop button
+  option abortonclose
+  # Try to connect this many times on failure
+  retries ${haproxy-conf:tentativas}
+  # If a client is bound to a particular backend but it goes down,
+  # send them to a different one
+  option redispatch
+  monitor-uri /haproxy-ping
+
+  timeout connect 7s
+  timeout queue   300s
+  timeout client  300s
+  timeout server  300s
+
+  # Error pages
+  errorfile 400 ${buildout:directory}/templates/html/400badreq.http
+  errorfile 503 ${buildout:directory}/templates/html/403forbid.http
+  errorfile 503 ${buildout:directory}/templates/html/503sorry.http
+
+
+
+  # Enable status page at this URL, on the port HAProxy is bound to
+  stats enable
+  stats uri /haproxy-status
+  stats refresh 5s
+  stats auth ${haproxy-conf:user-haproxy}:${haproxy-conf:passwd-haproxy}
+  stats realm Haproxy\ statistics
+
+frontend Intranet
+  bind ${haproxy-conf:bind}
+  default_backend ${haproxy-conf:label_server}
+
+# Load balancing over the zope instances
+backend ${haproxy-conf:label_server}
+  # Use Zope's __ac cookie as a basis for session stickiness if present.
+  appsession __ac len 32 timeout 1d
+  # Otherwise add a cookie called "serverid" for maintaining session stickiness.
+  # This cookie lasts until the client's browser closes, and is invisible to Zope.
+  cookie serverid insert nocache indirect
+  # If no session found, use the roundrobin load-balancing algorithm to pick a backend.
+  balance roundrobin   # Load Balancing algorithm
+  
+  # Use / (the default) for periodic backend health checks
+  option httpchk
+
+  # Server options:
+  # "cookie" sets the value of the serverid cookie to be used for the server
+  # "maxconn" is how many connections can be sent to the server at once
+  # "check" enables health checks
+  # "rise 1" means consider Zope up after 1 successful health check
+  server  plone01 ${haproxy-conf:server1} cookie p0101 check maxconn 2 rise 1
+  server  plone02 ${haproxy-conf:server2} cookie p0102 check maxconn 2 rise 1
+  server  plone03 ${haproxy-conf:server3} cookie p0103 check maxconn 2 rise 1
+  server  backup  ${haproxy-conf:server4} cookie backup check backup

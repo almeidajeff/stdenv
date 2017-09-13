@@ -1,0 +1,6 @@
+libfcgi-perl
+unzip 
+php5-cgi
+php5-mysql
+php5-gd
+mysql-server
